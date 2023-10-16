@@ -5,35 +5,55 @@ import jakarta.servlet.http.HttpServlet
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
+import org.apache.velocity.app.VelocityEngine
+import org.apache.velocity.VelocityContext
+import org.apache.velocity.Template
+import java.io.StringWriter
 
 class EmailServlet extends HttpServlet {
-    // This is a simple in-memory storage for emails
     private List<String> emails = []
 
-    // No-argument constructor
     EmailServlet() {
         // You can perform any necessary initialization here
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Handle GET request to retrieve emails
         resp.setContentType("application/json")
         resp.getWriter().println(emails.toString())
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Handle POST request to create a new email
         String emailContent = req.getParameter("content")
 
         if (emailContent != null) {
-            emails.add(emailContent)
+            // Generate dynamic email content using EmailService
+            String recipientName = req.getParameter("recipientName") // Assuming you have a recipientName parameter
+            String mergedEmailContent = generateDynamicEmail(recipientName, emailContent)
+            
+            emails.add(mergedEmailContent) // Add the merged email content to the email list
             resp.setStatus(HttpServletResponse.SC_CREATED)
             resp.getWriter().println("Email created successfully.")
         } else {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST)
             resp.getWriter().println("Email content is required.")
         }
+    }
+
+    private String generateDynamicEmail(String recipientName, String emailContent) {
+        VelocityEngine velocityEngine = new VelocityEngine()
+        velocityEngine.init()
+
+        VelocityContext velocityContext = new VelocityContext()
+        velocityContext.put("emailContent", emailContent)
+        velocityContext.put("recipientName", recipientName)
+        velocityContext.put("emailSubject", "Daily Email Request")
+
+        StringWriter writer = new StringWriter()
+        def template = velocityEngine.getTemplate("/src/main/resources/emailTemplate.vm")
+        template.merge(velocityContext, writer)
+
+        return writer.toString()
     }
 }

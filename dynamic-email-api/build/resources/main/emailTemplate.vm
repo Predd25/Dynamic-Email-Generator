@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>$emailSubject</title>
-</head>
-<body>
-    <h1>$emailSubject</h1>
-    <p>Dear $recipient,</p>
-    <p>$emailContent</p>
-    <p>Sincerely,<br>Your Company</p>
-</body>
-</html>
+Subject: $emailSubject
+
+Dear $recipientName,
+
+$emailContent
+
+Sincerely,
+Journal Technologies
 
